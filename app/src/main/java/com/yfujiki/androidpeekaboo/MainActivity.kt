@@ -13,6 +13,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.util.concurrent.Executors
 import java.util.concurrent.Executor
 import androidx.recyclerview.widget.LinearSnapHelper
+import kotlin.math.ceil
+import kotlin.math.max
+import kotlin.math.min
 
 class MainActivity : AppCompatActivity() {
 
@@ -47,16 +50,23 @@ class MainActivity : AppCompatActivity() {
                 val centerView = findSnapView(layoutManager!!) ?: return RecyclerView.NO_POSITION
                 var targetPosition = layoutManager.getPosition(centerView)
 
-                if (velocityX > 0) {
-                    targetPosition += 1
-                } else if (velocityX < 0) {
-                    targetPosition -= 1
-                }
-
-                if (targetPosition > currentPosition) {
-                    targetPosition = currentPosition + 1
-                } else if (targetPosition < currentPosition) {
-                    targetPosition = currentPosition - 1
+                if (currentPosition != targetPosition) {
+                    // Next page is defined solely by the velocity
+                    if (velocityX > 0) {
+                        targetPosition = max(currentPosition, targetPosition)
+                    } else if (velocityX < 0){
+                        targetPosition = min(currentPosition, targetPosition)
+                    }
+                } else {
+                    // It depends whether where the edge of the current page is
+                    if (velocityX > 0) {
+                        val scrollOffset = recyclerView.computeHorizontalScrollOffset()
+                        val rightEdgeOffset = scrollOffset + centerView.measuredWidth
+                        targetPosition = ceil((rightEdgeOffset / centerView.measuredWidth).toDouble()).toInt()
+                    } else if (velocityX < 0) {
+                        val rightEdgeOffset = recyclerView.computeHorizontalScrollOffset()
+                        targetPosition = ceil((rightEdgeOffset / centerView.measuredWidth).toDouble()).toInt()
+                    }
                 }
 
                 currentPosition = targetPosition
