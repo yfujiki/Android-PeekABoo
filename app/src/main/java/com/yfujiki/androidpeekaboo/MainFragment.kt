@@ -1,112 +1,56 @@
 package com.yfujiki.androidpeekaboo
 
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
-import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.*
-import androidx.core.view.GestureDetectorCompat
 import androidx.fragment.app.Fragment
-import androidx.paging.PagedList
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import java.util.concurrent.Executors
-import java.util.concurrent.Executor
-import androidx.recyclerview.widget.LinearSnapHelper
+import androidx.viewpager.widget.ViewPager
 import kotlinx.android.synthetic.main.fragment_main.view.*
-import kotlin.math.ceil
-import kotlin.math.max
-import kotlin.math.min
 
 class MainFragment : Fragment() {
 
-    private var currentPosition: Int = 2
+    val adapter: ImageViewPagerAdapter = ImageViewPagerAdapter(this)
 
-    private val snapHelper = object : LinearSnapHelper() {
-        override fun findTargetSnapPosition(
-            layoutManager: RecyclerView.LayoutManager?,
-            velocityX: Int,
-            velocityY: Int
-        ): Int {
-            val centerView = findSnapView(layoutManager!!) ?: return RecyclerView.NO_POSITION
-            var targetPosition = layoutManager.getPosition(centerView)
+    val listener: ViewPager.OnPageChangeListener = object: ViewPager.OnPageChangeListener {
 
-            if (currentPosition != targetPosition) {
-                // Next page is defined solely by the velocity
-                if (velocityX > 0) {
-                    targetPosition = max(currentPosition, targetPosition)
-                } else if (velocityX < 0){
-                    targetPosition = min(currentPosition, targetPosition)
-                }
+        private var jumpPosition = -1;
+
+
+        override fun onPageScrolled(
+            position: Int,
+            positionOffset: Float,
+            positionOffsetPixels: Int
+        ) {
+            //We do nothing here.
+        }
+
+        override fun onPageSelected(position: Int) {
+            if (position == 0) {
+                //prepare to jump to the last page
+                jumpPosition = adapter.getRealCount();
+
+                //TODO: indicator.setActive(adapter.getRealCount() - 1)
+            } else if (position == adapter.getRealCount() + 1) {
+                //prepare to jump to the first page
+                jumpPosition = 1;
+
+                //TODO: indicator.setActive(0)
             } else {
-                // It depends whether where the edge of the current page is
-                if (velocityX > 0) {
-                    val scrollOffset = view!!.recyclerView.computeHorizontalScrollOffset()
-                    val rightEdgeOffset = scrollOffset + centerView.measuredWidth
-                    targetPosition = ceil((rightEdgeOffset / centerView.measuredWidth).toDouble()).toInt()
-                } else if (velocityX < 0) {
-                    val rightEdgeOffset = view!!.recyclerView.computeHorizontalScrollOffset()
-                    targetPosition = ceil((rightEdgeOffset / centerView.measuredWidth).toDouble()).toInt()
-                }
+                //TODO: indicator.setActive(position - 1)
             }
+        }
 
-            currentPosition = targetPosition
-            return targetPosition
+        override public fun onPageScrollStateChanged(state: Int) {
+            //Let's wait for the animation to be completed then do the jump (if we do this in
+            //onPageSelected(int position) scroll animation will be canceled).
+            if (state == ViewPager.SCROLL_STATE_IDLE && jumpPosition >= 0) {
+                //Jump without animation so the user is not aware what happened.
+                view!!.viewPager.setCurrentItem(jumpPosition, false);
+                //Reset jump position.
+                jumpPosition = -1;
+            }
         }
     }
-
-    private val panGestureDetector = GestureDetectorCompat(activity, object : GestureDetector.SimpleOnGestureListener() {
-        override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
-            isScrolling = true
-
-            scrolledDistance = (e1!!.getX() - e2!!.getX()).toInt()
-
-            return true
-        }
-
-        override fun onDown(e: MotionEvent): Boolean {
-            return true
-        }
-    })
-
-    private val gestureListener = object : View.OnTouchListener {
-        override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-            if (panGestureDetector.onTouchEvent(event)) {
-                return true
-            }
-
-            if (event?.getAction() == MotionEvent.ACTION_UP) {
-                if (isScrolling) {
-                    view?.recyclerView?.smoothScrollBy(scrolledDistance, 0)
-                    isScrolling = false
-                }
-            }
-
-            return false
-        }
-    }
-
-    private val adapter: ImagePagedListAdapter = {
-        val config = PagedList.Config.Builder()
-            .setInitialLoadSizeHint(3)
-            .setPageSize(1)
-            .setPrefetchDistance(2)
-            .setEnablePlaceholders(false)
-            .build()
-        var builder = PagedList.Builder<Int, Drawable>(ImageDataSource(), config)
-        builder.setNotifyExecutor(UiThreadExecutor())
-        builder.setFetchExecutor(BackgroundThreadExecutor())
-        val list = builder.build()
-
-        val adapter = ImagePagedListAdapter()
-        adapter.submitList(list)
-        adapter
-    }()
-
-    private var isScrolling = false
-
-    private var scrolledDistance: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,29 +64,11 @@ class MainFragment : Fragment() {
         var fragmentResourceId = if (resources.configuration.orientation == ORIENTATION_LANDSCAPE)
                         R.layout.fragment_main_landscape else R.layout.fragment_main
         val view = inflater.inflate(fragmentResourceId, container, false)
-        view.recyclerView.layoutManager = LinearLayoutManager(activity, RecyclerView.HORIZONTAL, false)
 
-        snapHelper.attachToRecyclerView(view.recyclerView)
-        view.recyclerView.adapter = adapter
-        view.layout.setOnTouchListener(gestureListener)
+        view.viewPager.addOnPageChangeListener(listener)
+        view.viewPager.adapter = adapter
+        view.viewPager.setCurrentItem(1, false)
 
         return view
-    }
-}
-
-internal class UiThreadExecutor : Executor {
-    private val handler = Handler(Looper.getMainLooper())
-
-    override fun execute(command: Runnable) {
-        handler.post(command)
-    }
-}
-
-// Background thread executor to execute runnable on background thread
-internal class BackgroundThreadExecutor : Executor {
-    private val executorService = Executors.newFixedThreadPool(2)
-
-    override fun execute(command: Runnable) {
-        executorService.execute(command)
     }
 }

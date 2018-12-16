@@ -29,6 +29,8 @@ public class ImageViewPagerAdapter(val fragment: Fragment): PagerAdapter() {
         val view = LayoutInflater.from(fragment.context).inflate(R.layout.view_holder_image, container, false)
         view.imageView.setImageDrawable(imageFetcher.fetchRandomImage())
 
+        container.addView(view)
+
         return view
     }
 
@@ -45,8 +47,6 @@ public class ImageViewPagerAdapter(val fragment: Fragment): PagerAdapter() {
     }
 
     override fun destroyItem(container: ViewGroup, position: Int, `object`: Any) {
-        super.destroyItem(container, position, `object`)
-
         container.removeView(`object` as View)
     }
 }

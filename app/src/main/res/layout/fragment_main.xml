@@ -7,8 +7,8 @@
         android:background="#ffffff">
 
 
-    <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
+    <androidx.viewpager.widget.ViewPager
+            android:id="@+id/viewPager"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignTop="@id/frameImageView"
