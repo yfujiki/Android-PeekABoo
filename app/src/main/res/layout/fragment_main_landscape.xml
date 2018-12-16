@@ -6,7 +6,6 @@
         android:layout_height="match_parent"
         android:background="#ffffff">
 
-
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="wrap_content"
@@ -29,7 +28,9 @@
     <ImageView
             android:id="@+id/frameImageView"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentTop="true"
             android:layout_centerVertical="true"
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="32dp"
@@ -39,6 +40,4 @@
             android:background="#00ffffff"
             android:src="@drawable/green_frame_landscape"
     />
-
-
 </RelativeLayout>
