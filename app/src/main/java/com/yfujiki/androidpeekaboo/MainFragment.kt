@@ -29,11 +29,14 @@ class MainFragment : Fragment() {
                 //prepare to jump to the last page
                 jumpPosition = adapter.getRealCount();
 
+                adapter.rewindData()
+
                 //TODO: indicator.setActive(adapter.getRealCount() - 1)
             } else if (position == adapter.getRealCount() + 1) {
                 //prepare to jump to the first page
                 jumpPosition = 1;
 
+                adapter.forwardData()
                 //TODO: indicator.setActive(0)
             } else {
                 //TODO: indicator.setActive(position - 1)
@@ -54,6 +57,8 @@ class MainFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        adapter.initializeData()
 
         retainInstance = true
     }
