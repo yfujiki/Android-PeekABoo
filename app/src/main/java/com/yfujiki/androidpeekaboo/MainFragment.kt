@@ -87,13 +87,26 @@ class MainFragment : Fragment() {
         }
     }
 
+    private val adapter: ImagePagedListAdapter = {
+        val config = PagedList.Config.Builder()
+            .setInitialLoadSizeHint(3)
+            .setPageSize(1)
+            .setPrefetchDistance(2)
+            .setEnablePlaceholders(false)
+            .build()
+        var builder = PagedList.Builder<Int, Drawable>(ImageDataSource(), config)
+        builder.setNotifyExecutor(UiThreadExecutor())
+        builder.setFetchExecutor(BackgroundThreadExecutor())
+        val list = builder.build()
+
+        val adapter = ImagePagedListAdapter()
+        adapter.submitList(list)
+        adapter
+    }()
+
     private var isScrolling = false
 
     private var scrolledDistance: Int = 0
-
-    private lateinit var adapter: ImagePagedListAdapter
-
-    private var viewCreatedOnce = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,24 +119,6 @@ class MainFragment : Fragment() {
 
         val view = inflater.inflate(R.layout.fragment_main, container, false)
         view.recyclerView.layoutManager = LinearLayoutManager(activity, RecyclerView.HORIZONTAL, false)
-
-        if (!viewCreatedOnce) {
-            val config = PagedList.Config.Builder()
-                .setInitialLoadSizeHint(3)
-                .setPageSize(1)
-                .setPrefetchDistance(2)
-                .setEnablePlaceholders(false)
-                .build()
-            var builder = PagedList.Builder<Int, Drawable>(ImageDataSource(), config)
-            builder.setNotifyExecutor(UiThreadExecutor())
-            builder.setFetchExecutor(BackgroundThreadExecutor())
-            val list = builder.build()
-
-            adapter = ImagePagedListAdapter()
-            adapter.submitList(list)
-
-            viewCreatedOnce = true
-        }
 
         snapHelper.attachToRecyclerView(view.recyclerView)
         view.recyclerView.adapter = adapter
