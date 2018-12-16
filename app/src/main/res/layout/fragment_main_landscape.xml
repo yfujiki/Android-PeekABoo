@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#ffffff">
+
+
+    <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/frameImageView"
+            android:layout_alignBottom="@id/frameImageView"
+            android:layout_alignLeft="@id/frameImageView"
+            android:layout_alignRight="@id/frameImageView"
+            android:layout_alignStart="@id/frameImageView"
+            android:layout_alignEnd="@id/frameImageView"
+            android:layout_marginBottom="44dp"
+            android:layout_marginLeft="44dp"
+            android:layout_marginTop="44dp"
+            android:layout_marginRight="44dp"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:background="#ffffff"
+    />
+
+    <ImageView
+            android:id="@+id/frameImageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="32dp"
+            android:layout_marginLeft="32dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginRight="32dp"
+            android:background="#00ffffff"
+            android:src="@drawable/green_frame_landscape"
+    />
+
+
+</RelativeLayout>

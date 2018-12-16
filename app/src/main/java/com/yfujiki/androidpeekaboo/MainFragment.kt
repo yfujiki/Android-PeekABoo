@@ -1,5 +1,6 @@
 package com.yfujiki.androidpeekaboo
 
+import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
@@ -116,7 +117,9 @@ class MainFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         super.onCreateView(inflater, container, savedInstanceState)
 
-        val view = inflater.inflate(R.layout.fragment_main, container, false)
+        var fragmentResourceId = if (resources.configuration.orientation == ORIENTATION_LANDSCAPE)
+                        R.layout.fragment_main_landscape else R.layout.fragment_main
+        val view = inflater.inflate(fragmentResourceId, container, false)
         view.recyclerView.layoutManager = LinearLayoutManager(activity, RecyclerView.HORIZONTAL, false)
 
         snapHelper.attachToRecyclerView(view.recyclerView)
