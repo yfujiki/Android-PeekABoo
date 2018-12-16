@@ -1,11 +1,17 @@
 package com.yfujiki.androidpeekaboo
 
+import android.content.Context
 import android.graphics.drawable.Drawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.GestureDetector
+import android.view.MotionEvent
+import android.view.View
 import android.view.ViewTreeObserver
+import androidx.core.content.ContextCompat
+import androidx.core.view.GestureDetectorCompat
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,10 +22,52 @@ import androidx.recyclerview.widget.LinearSnapHelper
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.round
 
 class MainActivity : AppCompatActivity() {
 
     private var currentPosition: Int = 2
+
+    private val snapHelper = object : LinearSnapHelper() {
+        override fun findTargetSnapPosition(
+            layoutManager: RecyclerView.LayoutManager?,
+            velocityX: Int,
+            velocityY: Int
+        ): Int {
+            val centerView = findSnapView(layoutManager!!) ?: return RecyclerView.NO_POSITION
+            var targetPosition = layoutManager.getPosition(centerView)
+
+            if (currentPosition != targetPosition) {
+                // Next page is defined solely by the velocity
+                if (velocityX > 0) {
+                    targetPosition = max(currentPosition, targetPosition)
+                } else if (velocityX < 0){
+                    targetPosition = min(currentPosition, targetPosition)
+                }
+            } else {
+                // It depends whether where the edge of the current page is
+                if (velocityX > 0) {
+                    val scrollOffset = recyclerView.computeHorizontalScrollOffset()
+                    val rightEdgeOffset = scrollOffset + centerView.measuredWidth
+                    targetPosition = ceil((rightEdgeOffset / centerView.measuredWidth).toDouble()).toInt()
+                } else if (velocityX < 0) {
+                    val rightEdgeOffset = recyclerView.computeHorizontalScrollOffset()
+                    targetPosition = ceil((rightEdgeOffset / centerView.measuredWidth).toDouble()).toInt()
+                }
+            }
+
+            currentPosition = targetPosition
+            return targetPosition
+        }
+    }
+
+    private lateinit var panGestureDetector: GestureDetectorCompat
+
+    private lateinit var gestureListener: View.OnTouchListener
+
+    private var isScrolling = false
+
+    private var scrolledDistance: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,39 +89,40 @@ class MainActivity : AppCompatActivity() {
         adapter.submitList(list)
         recyclerView.adapter = adapter
 
-        val snapHelper = object : LinearSnapHelper() {
-            override fun findTargetSnapPosition(
-                layoutManager: RecyclerView.LayoutManager?,
-                velocityX: Int,
-                velocityY: Int
-            ): Int {
-                val centerView = findSnapView(layoutManager!!) ?: return RecyclerView.NO_POSITION
-                var targetPosition = layoutManager.getPosition(centerView)
+        snapHelper.attachToRecyclerView(recyclerView)
 
-                if (currentPosition != targetPosition) {
-                    // Next page is defined solely by the velocity
-                    if (velocityX > 0) {
-                        targetPosition = max(currentPosition, targetPosition)
-                    } else if (velocityX < 0){
-                        targetPosition = min(currentPosition, targetPosition)
-                    }
-                } else {
-                    // It depends whether where the edge of the current page is
-                    if (velocityX > 0) {
-                        val scrollOffset = recyclerView.computeHorizontalScrollOffset()
-                        val rightEdgeOffset = scrollOffset + centerView.measuredWidth
-                        targetPosition = ceil((rightEdgeOffset / centerView.measuredWidth).toDouble()).toInt()
-                    } else if (velocityX < 0) {
-                        val rightEdgeOffset = recyclerView.computeHorizontalScrollOffset()
-                        targetPosition = ceil((rightEdgeOffset / centerView.measuredWidth).toDouble()).toInt()
+        panGestureDetector = GestureDetectorCompat(this, object: GestureDetector.SimpleOnGestureListener() {
+            override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
+                isScrolling = true
+
+                scrolledDistance = (e1!!.getX() - e2!!.getX()).toInt()
+
+                return true
+            }
+
+            override fun onDown(e: MotionEvent): Boolean {
+                return true
+            }
+        })
+
+        gestureListener = (object: View.OnTouchListener {
+            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+                if (panGestureDetector.onTouchEvent(event)) {
+                    return true
+                }
+
+                if (event?.getAction() == MotionEvent.ACTION_UP) {
+                    if (isScrolling) {
+                        recyclerView.smoothScrollBy(scrolledDistance, 0)
+                        isScrolling = false
                     }
                 }
 
-                currentPosition = targetPosition
-                return targetPosition
+                return false
             }
-        }
-        snapHelper.attachToRecyclerView(recyclerView)
+        })
+
+        layout.setOnTouchListener(gestureListener)
     }
 }
 
