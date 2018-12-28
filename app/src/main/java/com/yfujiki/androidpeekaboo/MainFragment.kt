@@ -3,6 +3,7 @@ package com.yfujiki.androidpeekaboo
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.os.Bundle
 import android.view.*
+import androidx.core.view.GestureDetectorCompat
 import androidx.fragment.app.Fragment
 import androidx.viewpager.widget.ViewPager
 import kotlinx.android.synthetic.main.fragment_main.view.*
@@ -55,6 +56,10 @@ class MainFragment : Fragment() {
         }
     }
 
+    private val panGestureDetector = GestureDetectorCompat(activity, PanListener())
+
+    private val touchListner = TouchListener()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -74,6 +79,36 @@ class MainFragment : Fragment() {
         view.viewPager.adapter = adapter
         view.viewPager.setCurrentItem(1, false)
 
+        view.setOnTouchListener(touchListner)
+
         return view
+    }
+
+    private inner class PanListener : GestureDetector.SimpleOnGestureListener() {
+        override fun onScroll(
+            e1: MotionEvent, e2: MotionEvent,
+            distanceX: Float, distanceY: Float
+        ): Boolean {
+            view?.viewPager?.beginFakeDrag()
+            view?.viewPager?.fakeDragBy(distanceX)
+            view?.viewPager?.endFakeDrag()
+
+            return true
+        }
+
+        override fun onDown(e: MotionEvent?): Boolean {
+            return true
+        }
+    }
+
+    private inner class TouchListener: View.OnTouchListener {
+        override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+            if (panGestureDetector.onTouchEvent(event)) {
+                return true
+            }
+
+
+            return true
+        }
     }
 }
