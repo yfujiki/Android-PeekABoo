@@ -31,16 +31,11 @@ class MainFragment : Fragment() {
                 jumpPosition = adapter.getRealCount();
 
                 adapter.rewindData()
-
-                //TODO: indicator.setActive(adapter.getRealCount() - 1)
             } else if (position == adapter.getRealCount() + 1) {
                 //prepare to jump to the first page
                 jumpPosition = 1;
 
                 adapter.forwardData()
-                //TODO: indicator.setActive(0)
-            } else {
-                //TODO: indicator.setActive(position - 1)
             }
         }
 
