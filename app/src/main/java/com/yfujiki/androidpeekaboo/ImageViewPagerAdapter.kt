@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager.widget.PagerAdapter
 import kotlinx.android.synthetic.main.view_holder_image.view.*
 
-public class ImageViewPagerAdapter(val fragment: Fragment): PagerAdapter() {
+class ImageViewPagerAdapter(val fragment: Fragment): PagerAdapter() {
 
     private var imageList = listOf<Drawable>().toMutableList()
 
@@ -50,11 +50,6 @@ public class ImageViewPagerAdapter(val fragment: Fragment): PagerAdapter() {
         return 5
     }
 
-    fun getRealCount(): Int {
-        return 3
-    }
-
-    @Override
     override fun instantiateItem(container: ViewGroup, position: Int): View {
         val view = LayoutInflater.from(fragment.context).inflate(R.layout.view_holder_image, container, false)
         view.imageView.setImageDrawable(imageList.get(position))

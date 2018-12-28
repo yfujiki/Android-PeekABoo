@@ -28,23 +28,18 @@ class MainFragment : Fragment() {
         override fun onPageSelected(position: Int) {
             if (position == 0) {
                 //prepare to jump to the last page
-                jumpPosition = adapter.getRealCount();
+                jumpPosition = 3
 
                 adapter.rewindData()
-
-                //TODO: indicator.setActive(adapter.getRealCount() - 1)
-            } else if (position == adapter.getRealCount() + 1) {
+            } else if (position == 4) {
                 //prepare to jump to the first page
                 jumpPosition = 1;
 
                 adapter.forwardData()
-                //TODO: indicator.setActive(0)
-            } else {
-                //TODO: indicator.setActive(position - 1)
             }
         }
 
-        override public fun onPageScrollStateChanged(state: Int) {
+        override fun onPageScrollStateChanged(state: Int) {
             //Let's wait for the animation to be completed then do the jump (if we do this in
             //onPageSelected(int position) scroll animation will be canceled).
             if (state == ViewPager.SCROLL_STATE_IDLE && jumpPosition >= 0) {
