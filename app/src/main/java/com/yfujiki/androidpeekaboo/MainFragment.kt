@@ -56,9 +56,44 @@ class MainFragment : Fragment() {
         }
     }
 
-    private val panGestureDetector = GestureDetectorCompat(activity, PanListener())
+    private val panGestureDetector = GestureDetectorCompat(activity, object: GestureDetector.SimpleOnGestureListener() {
+        override fun onScroll(
+            e1: MotionEvent, e2: MotionEvent,
+            distanceX: Float, distanceY: Float
+        ): Boolean {
+            isScrolling = true
 
-    private val touchListner = TouchListener()
+            if (view?.viewPager?.isFakeDragging() == false) {
+                view?.viewPager?.beginFakeDrag()
+            }
+            view?.viewPager?.fakeDragBy(-distanceX)
+
+            return true
+        }
+
+        override fun onDown(e: MotionEvent?): Boolean {
+            return true
+        }
+    })
+
+    private val touchListner = object: View.OnTouchListener {
+        override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+            if (panGestureDetector.onTouchEvent(event)) {
+                return true
+            }
+
+            if (event?.getAction() == MotionEvent.ACTION_UP) {
+                if (isScrolling) {
+                    if (view?.viewPager?.isFakeDragging() == true) {
+                        view?.viewPager?.endFakeDrag()
+                    }
+                    isScrolling = false
+                }
+            }
+
+            return true
+        }
+    }
 
     private var isScrolling: Boolean = false
 
@@ -84,44 +119,5 @@ class MainFragment : Fragment() {
         view.setOnTouchListener(touchListner)
 
         return view
-    }
-
-    private inner class PanListener : GestureDetector.SimpleOnGestureListener() {
-        override fun onScroll(
-            e1: MotionEvent, e2: MotionEvent,
-            distanceX: Float, distanceY: Float
-        ): Boolean {
-            isScrolling = true
-
-            if (view?.viewPager?.isFakeDragging() == false) {
-                view?.viewPager?.beginFakeDrag()
-            }
-            view?.viewPager?.fakeDragBy(-distanceX)
-
-            return true
-        }
-
-        override fun onDown(e: MotionEvent?): Boolean {
-            return true
-        }
-    }
-
-    private inner class TouchListener: View.OnTouchListener {
-        override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-            if (panGestureDetector.onTouchEvent(event)) {
-                return true
-            }
-
-            if (event?.getAction() == MotionEvent.ACTION_UP) {
-                if (isScrolling) {
-                    if (view?.viewPager?.isFakeDragging() == true) {
-                        view?.viewPager?.endFakeDrag()
-                    }
-                    isScrolling = false
-                }
-            }
-
-            return true
-        }
     }
 }
