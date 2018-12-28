@@ -60,6 +60,8 @@ class MainFragment : Fragment() {
 
     private val touchListner = TouchListener()
 
+    private var isScrolling: Boolean = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -89,9 +91,12 @@ class MainFragment : Fragment() {
             e1: MotionEvent, e2: MotionEvent,
             distanceX: Float, distanceY: Float
         ): Boolean {
-            view?.viewPager?.beginFakeDrag()
-            view?.viewPager?.fakeDragBy(distanceX)
-            view?.viewPager?.endFakeDrag()
+            isScrolling = true
+
+            if (view?.viewPager?.isFakeDragging() == false) {
+                view?.viewPager?.beginFakeDrag()
+            }
+            view?.viewPager?.fakeDragBy(-distanceX)
 
             return true
         }
@@ -107,6 +112,14 @@ class MainFragment : Fragment() {
                 return true
             }
 
+            if (event?.getAction() == MotionEvent.ACTION_UP) {
+                if (isScrolling) {
+                    if (view?.viewPager?.isFakeDragging() == true) {
+                        view?.viewPager?.endFakeDrag()
+                    }
+                    isScrolling = false
+                }
+            }
 
             return true
         }
